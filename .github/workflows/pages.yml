@@ -46,7 +46,7 @@ jobs:
           version: 'latest'
 
       - name: build project
-        run: trunk build --release --dist "dist" --public-url "$PUBLIC_URL_PREFIX"
+        run: ./build.sh
 
       - name: Setup Pages
         uses: actions/configure-pages@v1
