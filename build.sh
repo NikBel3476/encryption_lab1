@@ -1,3 +1,5 @@
 dist_dir="dist"
+output="$(pwd)/$dist_dir"
 
-trunk build --release --dist "$dist_dir" --public-url "$(pwd)/$dist_dir"
+echo "$output"
+trunk build --release --dist "$output" --public-url "$dist_dir"
