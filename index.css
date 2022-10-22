@@ -7,26 +7,44 @@ html, body {
     padding: 0;
 }
 
-.message-form {
-    margin: 20px;
+.message-form, .hash-form {
+    margin: 20px auto auto 20px;
     display: flex;
     flex-direction: column;
     min-width: 200px;
     width: 15vw;
 }
 
-.message-input {
+.message-input, .hash-input {
     outline: none;
 }
 
-.message-input:invalid {
+.message-input:invalid, .hash-input:invalid {
     border: 2px solid red;
 }
 
-.invalid-message-label {
+.invalid-message-label, .invalid-hash-label {
     display: none;
 }
 
 .message-input:invalid + .invalid-message-label {
     display: block;
+}
+
+.hash-input:invalid + .invalid-hash-label {
+    display: block;
+}
+
+.form-title {
+    margin: 5px 0 0 0;
+}
+
+.form-output {
+    margin: 5px 0 0 0;
+}
+
+.form-output > pre {
+    display: inline;
+    font-size: inherit;
+    font-family: inherit;
 }
