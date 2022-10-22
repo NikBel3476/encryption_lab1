@@ -1,11 +1,18 @@
-use yew::prelude::*;
+use yew::{
+    prelude::*,
+    events::InputEvent
+};
+use web_sys::HtmlInputElement;
+use wasm_logger;
+
+pub mod encryption;
 
 enum Msg {
-    AddOne,
+    MessageInputChange(String)
 }
 
 struct Model {
-    value: i64,
+    hash: String
 }
 
 impl Component for Model {
@@ -14,33 +21,45 @@ impl Component for Model {
 
     fn create(_ctx: &Context<Self>) -> Self {
         Self {
-            value: 0,
+            hash: String::new()
         }
     }
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::AddOne => {
-                self.value += 1;
-                // the value has changed so we need to
-                // re-render for it to appear on the page
-                true
-            }
+            Msg::MessageInputChange(message) => self.hash = encryption::encrypt(&message)
         }
+        true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        // This gives us a component's "`Scope`" which allows us to send messages, etc to the component.
         let link = ctx.link();
+
+        let on_message_input_change = link.batch_callback(|e: InputEvent| {
+            let input = e.target_dyn_into::<HtmlInputElement>();
+
+            input.map(|input| Msg::MessageInputChange(input.value()))
+        });
+
         html! {
-            <div>
-                <button onclick={link.callback(|_| Msg::AddOne)}>{ "+1" }</button>
-                <p>{ self.value }</p>
-            </div>
+            <form class="message-form">
+                <label for="message">{"Сообщение"}</label>
+                <input
+                    type="text"
+                    class="message-input"
+                    id="message"
+                    name="message"
+                    oninput={on_message_input_change}
+                    pattern=r"^[a-zA-Z0-9]+$"
+                />
+                <span class="invalid-message-label">{"Можно ввести только символы латинского алфавита и цифры"}</span>
+                <p>{"Шифр: "}{ &self.hash }</p>
+            </form>
         }
     }
 }
 
 fn main() {
+    wasm_logger::init(wasm_logger::Config::default());
     yew::start_app::<Model>();
 }

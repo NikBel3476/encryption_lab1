@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 yew = "0.19"
+web-sys = "0.3"
+wasm-logger = "0.2"
+log = "0.4"

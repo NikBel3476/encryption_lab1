@@ -1,0 +1,32 @@
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+.message-form {
+    margin: 20px;
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    width: 15vw;
+}
+
+.message-input {
+    outline: none;
+}
+
+.message-input:invalid {
+    border: 2px solid red;
+}
+
+.invalid-message-label {
+    display: none;
+}
+
+.message-input:invalid + .invalid-message-label {
+    display: block;
+}
