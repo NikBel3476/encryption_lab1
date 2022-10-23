@@ -123,7 +123,7 @@ impl Component for Model {
             <table class="encryption-table">
                 <thead>
                     <tr>
-                        <th colspan="6">{"Таблица шифрования"}</th>
+                        <th colspan="7">{"Таблица шифрования"}</th>
                     </tr>
                 </thead>
                 <tbody>
