@@ -1,5 +1,7 @@
 * {
     box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    font-size: 24px;
 }
 
 html, body {
@@ -11,19 +13,26 @@ html, body {
     margin: 20px auto auto 20px;
     display: flex;
     flex-direction: column;
-    min-width: 200px;
-    width: 15vw;
+    max-width: 500px;
 }
 
-.message-input, .hash-input {
+@media screen and (max-width: 600px) {
+    .message-form, .hash-form {
+        margin-right: 20px;
+        max-width: 100%;
+    }
+}
+
+.secret-key-input, .message-input, .hash-input {
     outline: none;
+    height: 1.5rem;
 }
 
-.message-input:invalid, .hash-input:invalid {
+.secret-key-input:invalid, .message-input:invalid, .hash-input:invalid {
     border: 2px solid red;
 }
 
-.invalid-message-label, .invalid-hash-label {
+.invalid-secret-key-label, .invalid-message-label, .invalid-hash-label {
     display: none;
 }
 
@@ -32,6 +41,10 @@ html, body {
 }
 
 .hash-input:invalid + .invalid-hash-label {
+    display: block;
+}
+
+.secret-key-input:invalid + .invalid-secret-key-label {
     display: block;
 }
 
@@ -47,4 +60,17 @@ html, body {
     display: inline;
     font-size: inherit;
     font-family: inherit;
+}
+
+.encryption-table {
+    margin: 20px auto auto 20px;
+    text-align: center;
+}
+
+td[scope="row"] {
+    border-bottom: 2px solid green;
+}
+
+td[scope="col"] {
+    border-right: 2px solid blue;
 }

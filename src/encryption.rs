@@ -1,11 +1,6 @@
-use log;
+const ENCRYPTION_CHARS: [char; 6] = ['A', 'B', 'C', 'D', 'E', 'F'];
 
-const SECRET: [char; 6] = ['S', 'E', 'C', 'R', 'E', 'T'];
-const ENCRYPTION_CHARS_AMOUNT: usize = SECRET.len();
-
-const ENCRYPTION_CHARS: [char; ENCRYPTION_CHARS_AMOUNT] = ['A', 'B', 'C', 'D', 'E', 'F'];
-
-const ENCRYPTION_TABLE: [char; ENCRYPTION_CHARS_AMOUNT * ENCRYPTION_CHARS_AMOUNT] = [
+const ENCRYPTION_TABLE: [char; 6 * 6] = [
     'A', 'B', 'C', 'D', 'E', 'F',
     'G', 'H', 'I', 'J', 'K', 'L',
     'M', 'N', 'O', 'P', 'Q', 'R',
@@ -14,19 +9,19 @@ const ENCRYPTION_TABLE: [char; ENCRYPTION_CHARS_AMOUNT * ENCRYPTION_CHARS_AMOUNT
     '4', '5', '6', '7', '8', '9'
 ];
 
-pub fn encrypt(message: &str) -> String {
+pub fn encrypt(message: &str, key: &str) -> String {
+    let encryption_chars_amount: usize = key.len();
     // Этап 1. Замена
     let replaced_message = message.trim().to_ascii_uppercase().chars().into_iter().fold(String::new(), |accum, c| {
         let index = ENCRYPTION_TABLE.iter().position(|&x| { &x == &c }).unwrap();
-        let row = index / ENCRYPTION_CHARS_AMOUNT;
-        let column = index % ENCRYPTION_CHARS_AMOUNT;
+        let row = index / encryption_chars_amount;
+        let column = index % encryption_chars_amount;
 
         accum + &ENCRYPTION_CHARS[row].to_string() + &ENCRYPTION_CHARS[column].to_string()
     });
-    log::info!("{}", &replaced_message);
 
     // Этап 2. Перестановка
-    let mut vectors_to_permutation: [Vec<char>; ENCRYPTION_CHARS_AMOUNT] = [
+    let mut vectors_to_permutation = vec![
         Vec::new(),
         Vec::new(),
         Vec::new(),
@@ -34,18 +29,18 @@ pub fn encrypt(message: &str) -> String {
         Vec::new(),
         Vec::new(),
     ];
-    for (i, c) in SECRET.into_iter().enumerate() {
-        vectors_to_permutation[i % ENCRYPTION_CHARS_AMOUNT].push(c);
+    for (i, c) in key.chars().into_iter().enumerate() {
+        vectors_to_permutation[i % encryption_chars_amount].push(c);
     }
     for (i, c) in replaced_message.chars().into_iter().enumerate() {
-        vectors_to_permutation[i % ENCRYPTION_CHARS_AMOUNT].push(c);
+        vectors_to_permutation[i % encryption_chars_amount].push(c);
     }
     vectors_to_permutation.sort_by(|a, b| a[0].cmp(&b[0]));
-    for i in 0..ENCRYPTION_CHARS_AMOUNT {
+    for i in 0..encryption_chars_amount {
         vectors_to_permutation[i].remove(0);
     }
 
-    let rows = replaced_message.len() / ENCRYPTION_CHARS_AMOUNT + 1;
+    let rows = replaced_message.len() / encryption_chars_amount + 1;
     let mut hash = String::new();
     for i in 0..rows {
         for j in 0..vectors_to_permutation.len() {
@@ -59,27 +54,28 @@ pub fn encrypt(message: &str) -> String {
             }
         }
     }
-    log::info!("{}", &hash);
 
     hash.trim().to_string()
 }
 
-pub fn decrypt(hash: &str) -> String {
+pub fn decrypt(hash: &str, key: &str) -> String {
+    let encryption_chars_amount: usize = key.len();
+
     let mut vectors_to_permutation = vec![];
     let sorted_secret = {
-        let mut secret = SECRET.to_vec();
+        let mut secret: Vec<char> = key.chars().collect();
         secret.sort_by(|a, b| a.cmp(b));
         secret
     };
-    for (i, c) in sorted_secret.into_iter().enumerate() {
+    for c in sorted_secret.into_iter() {
         vectors_to_permutation.push(vec![c]);
     }
     for (i, c) in hash.trim().chars().into_iter().enumerate() {
-        vectors_to_permutation[i % ENCRYPTION_CHARS_AMOUNT].push(c);
+        vectors_to_permutation[i % encryption_chars_amount].push(c);
     }
 
     let mut permutated_vectors: Vec<Vec<char>> = vec![];
-    for c in SECRET.into_iter() {
+    for c in key.chars().into_iter() {
         let index = vectors_to_permutation.iter().position(|x| { x[0] == c }).unwrap();
         permutated_vectors.push(vectors_to_permutation.remove(index).iter()
             .filter_map(|x| match *x != ' ' {
@@ -92,10 +88,8 @@ pub fn decrypt(hash: &str) -> String {
         v.remove(0);
     }
 
-    log::info!("{:#?}", &permutated_vectors);
-
     let mut message = String::new();
-    let rows = hash.len() / ENCRYPTION_CHARS_AMOUNT + 1;
+    let rows = hash.len() / encryption_chars_amount + 1;
     for i in 0..rows {
         for j in 0..permutated_vectors.len() {
             let letter = permutated_vectors.get(j);
@@ -109,7 +103,6 @@ pub fn decrypt(hash: &str) -> String {
         }
     }
     message = message.to_ascii_uppercase();
-    log::info!("{}", &message);
 
     let mut decrypted_message = String::new();
     for i in 0..message.len() / 2 {
@@ -121,7 +114,7 @@ pub fn decrypt(hash: &str) -> String {
             Some(column) => column,
             None => return String::from("Не удалось расшифровать сообщение 2")
         };
-        let index = row * ENCRYPTION_CHARS_AMOUNT + column;
+        let index = row * encryption_chars_amount + column;
         match ENCRYPTION_TABLE.get(index) {
             Some(letter) => decrypted_message.push(*letter),
             None => return String::from("Не удалось расшифровать сообщение 3")
