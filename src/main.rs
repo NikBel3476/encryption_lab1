@@ -4,6 +4,7 @@ use yew::{
 };
 use web_sys::HtmlInputElement;
 use regex::Regex;
+use wasm_logger;
 
 pub mod encryption;
 
@@ -15,7 +16,9 @@ enum Msg {
 
 struct Model {
     secret_key: String,
+    message_input: String,
     message_hash: String,
+    hash_input: String,
     encoded_message: String
 }
 
@@ -26,7 +29,9 @@ impl Component for Model {
     fn create(_ctx: &Context<Self>) -> Self {
         Self {
             secret_key: String::from("SECRET"),
+            message_input: String::new(),
             message_hash: String::new(),
+            hash_input: String::new(),
             encoded_message: String::new()
         }
     }
@@ -35,23 +40,44 @@ impl Component for Model {
         match msg {
             Msg::SecretKeyChange(secret_key) => {
                 let re = Regex::new(r"^[a-zA-Z0-9]+$").unwrap();
-                match secret_key.len() == 6 && re.is_match(&secret_key) {
-                    true => self.secret_key = secret_key,
+                let re_hash = Regex::new(r"^[a-zA-Z0-9\s]+$").unwrap();
+                match secret_key.len() > 0 && re.is_match(&secret_key) {
+                    true => {
+                        self.secret_key = secret_key;
+                        if re.is_match(&self.message_input) {
+                            self.message_hash = encryption::encrypt(&self.message_input, &self.secret_key);
+                        }
+                        if re_hash.is_match(&self.hash_input) {
+                            self.encoded_message = encryption::decrypt(&self.hash_input, &self.secret_key)
+                        }
+                    },
                     _ => ()
                 }
             }
             Msg::MessageInputChange(message) => {
                 let re = Regex::new(r"^[a-zA-Z0-9]+$").unwrap();
                 match re.is_match(&message) {
-                    true => self.message_hash = encryption::encrypt(&message, &self.secret_key),
-                    false => self.message_hash = String::new()
+                    true => {
+                        self.message_input = message.clone();
+                        self.message_hash = encryption::encrypt(&message, &self.secret_key);
+                    },
+                    false => {
+                        self.message_input = String::new();
+                        self.message_hash = String::new();
+                    }
                 }
             },
             Msg::HashInputChange(hash) => {
                 let re = Regex::new(r"^[a-zA-Z0-9\s]+$").unwrap();
                 match re.is_match(&hash) {
-                    true => self.encoded_message = encryption::decrypt(&hash, &self.secret_key),
-                    false => self.encoded_message = String::new()
+                    true => {
+                        self.hash_input = hash.clone();
+                        self.encoded_message = encryption::decrypt(&hash, &self.secret_key);
+                    },
+                    false => {
+                        self.hash_input = String::new();
+                        self.encoded_message = String::new();
+                    }
                 }
             }
         }
@@ -85,13 +111,13 @@ impl Component for Model {
                     class="secret-key-input"
                     id="secret-key"
                     name="secret-key"
-                    minlength="6"
-                    maxlength="6"
+                    minlength="1"
+                    placeholder="SECRET"
                     oninput={on_secret_key_input_change}
                     pattern=r"^[a-zA-Z0-9]+$"
                 />
                 <span class="invalid-secret-key-label">
-                    {"Ключ должен быть длиной 6 символов, а также содержать только буквы латинского алфавита или цифры"}
+                    {"Ключ должен содержать только буквы латинского алфавита или цифры"}
                 </span>
                 <h3 class="form-title">{ "Шифрование" }</h3>
                 <label for="message">{ "Сообщение" }</label>
@@ -198,5 +224,6 @@ impl Component for Model {
 }
 
 fn main() {
+    wasm_logger::init(wasm_logger::Config::default());
     yew::start_app::<Model>();
 }

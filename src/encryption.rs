@@ -14,23 +14,16 @@ pub fn encrypt(message: &str, key: &str) -> String {
     // Этап 1. Замена
     let replaced_message = message.trim().to_ascii_uppercase().chars().into_iter().fold(String::new(), |accum, c| {
         let index = ENCRYPTION_TABLE.iter().position(|&x| { &x == &c }).unwrap();
-        let row = index / encryption_chars_amount;
-        let column = index % encryption_chars_amount;
+        let row = index / ENCRYPTION_CHARS.len();
+        let column = index % ENCRYPTION_CHARS.len();
 
         accum + &ENCRYPTION_CHARS[row].to_string() + &ENCRYPTION_CHARS[column].to_string()
     });
 
     // Этап 2. Перестановка
-    let mut vectors_to_permutation = vec![
-        Vec::new(),
-        Vec::new(),
-        Vec::new(),
-        Vec::new(),
-        Vec::new(),
-        Vec::new(),
-    ];
-    for (i, c) in key.chars().into_iter().enumerate() {
-        vectors_to_permutation[i % encryption_chars_amount].push(c);
+    let mut vectors_to_permutation: Vec<Vec<char>> = vec![];
+    for c in key.chars().into_iter() {
+        vectors_to_permutation.push(vec![c]);
     }
     for (i, c) in replaced_message.chars().into_iter().enumerate() {
         vectors_to_permutation[i % encryption_chars_amount].push(c);
@@ -108,16 +101,16 @@ pub fn decrypt(hash: &str, key: &str) -> String {
     for i in 0..message.len() / 2 {
         let row = match ENCRYPTION_CHARS.iter().position(|&x| { &x == &message.chars().nth(i * 2).unwrap() }) {
             Some(row) => row,
-            None => return String::from("Не удалось расшифровать сообщение 1")
+            None => return String::from("Не удалось расшифровать сообщение")
         };
         let column = match ENCRYPTION_CHARS.iter().position(|&x| { &x == &message.chars().nth(i * 2 + 1).unwrap() }) {
             Some(column) => column,
-            None => return String::from("Не удалось расшифровать сообщение 2")
+            None => return String::from("Не удалось расшифровать сообщение")
         };
-        let index = row * encryption_chars_amount + column;
+        let index = row * ENCRYPTION_CHARS.len() + column;
         match ENCRYPTION_TABLE.get(index) {
             Some(letter) => decrypted_message.push(*letter),
-            None => return String::from("Не удалось расшифровать сообщение 3")
+            None => return String::from("Не удалось расшифровать сообщение")
         }
     }
 
