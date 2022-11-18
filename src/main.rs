@@ -103,7 +103,7 @@ impl Component for Model {
         });
 
         html! {
-            <>
+            <main>
             <form class="message-form">
                 <label for="secret-key">{"Ключ шифрования"}</label>
                 <input
@@ -130,7 +130,8 @@ impl Component for Model {
                     pattern=r"^[a-zA-Z0-9]+$"
                 />
                 <span class="invalid-message-label">{"Можно ввести только символы латинского алфавита и цифры"}</span>
-                <p class="form-output">{ "Шифр:" }<pre>{ &self.message_hash }</pre></p>
+                <p class="form-output__label">{ "Шифр:" }</p>
+                <p class="form-output">{ &self.message_hash }</p>
             </form>
             <form class="hash-form">
                 <h3 class="form-title">{ "Расшифровка" }</h3>
@@ -144,7 +145,8 @@ impl Component for Model {
                     pattern=r"^[a-zA-Z0-9\s]+$"
                 />
                 <span class="invalid-hash-label">{"Можно ввести только символы латинского алфавита, цифры и пробелы"}</span>
-                <p class="form-output">{ "Сообщение:" }<pre>{ &self.encoded_message }</pre></p>
+                <p class="form-output__label">{ "Сообщение:" }</p>
+                <p class="form-output">{ &self.encoded_message }</p>
             </form>
             <table class="encryption-table">
                 <thead>
@@ -218,7 +220,7 @@ impl Component for Model {
                     </tr>
                 </tbody>
             </table>
-            </>
+            </main>
         }
     }
 }
